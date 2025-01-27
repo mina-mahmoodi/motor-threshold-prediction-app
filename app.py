@@ -24,10 +24,12 @@ motor_size = st.number_input('Enter motor size (kW)', min_value=1, max_value=100
 if motor_size:
     st.write(f'You entered motor size: {motor_size} kW')
     
-    # Handle the motor features as a DataFrame
-    motor_features = np.array([[motor_size]])  # Create a 2D array for scaling
+    # Create input feature array (if model uses more than 1 feature, ensure you have all of them)
+    # Assuming the model was trained on 'Motor Size (kW)' as the only feature
+    motor_features = np.array([[motor_size]])  # Ensure this is a 2D array
+    
+    # Scale the input features using the loaded scaler
     try:
-        # Scale the input features using the loaded scaler
         motor_features_scaled = scaler.transform(motor_features)
     except ValueError as e:
         st.error(f"Error scaling features: {e}")
@@ -41,4 +43,3 @@ if motor_size:
     
     # Show data for visualization
     st.write(df)
-
