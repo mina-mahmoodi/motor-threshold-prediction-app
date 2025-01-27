@@ -68,28 +68,19 @@ if uploaded_file is not None:
     model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=4, verbose=0)
 
     # Step 8: User Input for Motor Size
-    motor_size = st.number_input("Enter Motor Output Power (kW):", min_value=0.0, step=0.1)
+    motor_size_input = st.number_input("Enter Motor Output Power (kW)", min_value=0.0, step=1.0)
 
-    if motor_size > 0:
-        # Step 9: Predict Thresholds for the Entered Motor Size
-        motor_data = grouped_data[grouped_data["Motor Output Power (kW)"] == motor_size]
-        if not motor_data.empty:
-            motor_input = motor_data[[
-                "Motor Output Power (kW)", "X Mean", "X Std Dev", "X Min", "X Max",
-                "Y Mean", "Y Std Dev", "Y Min", "Y Max",
-                "Z Mean", "Z Std Dev", "Z Min", "Z Max",
-                "RPM Mean", "RPM Std Dev", "Torque Mean", "Torque Std Dev",
-                "Energy Efficiency Mean", "Energy Efficiency Std Dev"
-            ]].values
-            motor_input_scaled = scaler.transform(motor_input)
+    # Step 9: Predict Thresholds for the Input Motor Size
+    if motor_size_input > 0:
+        # Use the trained model to predict for the entered motor size
+        motor_features = np.array([motor_size_input, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        motor_features_scaled = scaler.transform([motor_features])
 
-            # Predict the thresholds
-            predicted_thresholds = model.predict(motor_input_scaled)
+        # Predict thresholds
+        predicted_thresholds = model.predict(motor_features_scaled)
 
-            # Display predicted thresholds
-            st.write(f"Predicted Thresholds for Motor Size {motor_size} kW:")
-            st.write(f"  X Warning: {predicted_thresholds[0][0]:.3f}, X Error: {predicted_thresholds[0][1]:.3f}")
-            st.write(f"  Y Warning: {predicted_thresholds[0][2]:.3f}, Y Error: {predicted_thresholds[0][3]:.3f}")
-            st.write(f"  Z Warning: {predicted_thresholds[0][4]:.3f}, Z Error: {predicted_thresholds[0][5]:.3f}")
-        else:
-            st.write(f"No data available for {motor_size} kW motor size.")
+        # Display the prediction
+        st.write(f"Predicted Thresholds for Motor Size {motor_size_input} kW:")
+        st.write(f"  X Warning: {predicted_thresholds[0][0]:.3f}, X Error: {predicted_thresholds[0][1]:.3f}")
+        st.write(f"  Y Warning: {predicted_thresholds[0][2]:.3f}, Y Error: {predicted_thresholds[0][3]:.3f}")
+        st.write(f"  Z Warning: {predicted_thresholds[0][4]:.3f}, Z Error: {predicted_thresholds[0][5]:.3f}")
