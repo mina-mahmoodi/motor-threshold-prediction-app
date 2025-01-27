@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 streamlit
 tensorflow
 scikit-learn
 pandas
 numpy
-=======
 streamlit
 tensorflow
 scikit-learn
 pandas
 numpy
->>>>>>> 8fdcb1a96ec60db6dc8b6ebb11b67d54225381b9
