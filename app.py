@@ -1,37 +1,44 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression
 import joblib
+from sklearn.preprocessing import StandardScaler
 
-# Load pre-trained model and scaler
-model = joblib.load('motor_threshold_model.pkl')
+# Load the pre-trained model and scaler
+model = joblib.load('motor_model.pkl')
 scaler = joblib.load('scaler.pkl')
 
-# Title and explanation for the app
-st.title('Motor Threshold Prediction App')
-st.markdown("""
-    This app predicts the threshold based on the motor size entered. The model has been trained on motor sizes and their corresponding threshold values. 
-    Enter any motor size, and the app will predict the threshold.
-""")
+# Load your historical motor data (replace with your dataset)
+data = {
+    'Motor Size (kW)': [5, 10, 15, 20, 25, 30],
+    'Threshold (A)': [10, 15, 20, 25, 30, 35]
+}
+df = pd.DataFrame(data)
 
-# Input from the user
-motor_size = st.number_input("Enter Motor Size (kW):", min_value=0.0, step=0.1)
+# Streamlit App Interface
+st.title('Motor Threshold Prediction')
 
-# Check if the input motor size is valid
-if motor_size > 0:
-    # Example motor features, assuming motor_size is one of the features
-    # Add additional features if necessary, like voltage, RPM, etc.
-    motor_features = np.array([motor_size]).reshape(1, -1)  # Reshape to 2D for the scaler
+# Motor size input from the user
+motor_size = st.number_input('Enter motor size (kW)', min_value=1, max_value=100, step=1)
 
-    # Scale the motor features
-    motor_features_scaled = scaler.transform(motor_features)
+if motor_size:
+    st.write(f'You entered motor size: {motor_size} kW')
+    
+    # Handle the motor features as a DataFrame
+    motor_features = np.array([[motor_size]])  # Create a 2D array for scaling
+    try:
+        # Scale the input features using the loaded scaler
+        motor_features_scaled = scaler.transform(motor_features)
+    except ValueError as e:
+        st.error(f"Error scaling features: {e}")
+        st.stop()  # Stop execution if scaling fails
+    
+    # Predict the threshold using the trained model
+    prediction = model.predict(motor_features_scaled)
+    
+    # Output the prediction
+    st.write(f"Predicted threshold current for {motor_size} kW motor: {prediction[0]} A")
+    
+    # Show data for visualization
+    st.write(df)
 
-    # Predict the threshold using the model
-    predicted_threshold = model.predict(motor_features_scaled)
-
-    # Display the predicted threshold
-    st.write(f"The predicted threshold for {motor_size} kW motor size is: {predicted_threshold[0]:.2f} units")
-else:
-    st.write("Please enter a valid motor size greater than 0.")
