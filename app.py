@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -60,12 +61,19 @@ if uploaded_file is not None:
     # Step 7: Build and Train Neural Network
     model = Sequential([
         Input(shape=(X_train.shape[1],)),
+        Dense(128, activation='relu'),
         Dense(64, activation='relu'),
-        Dense(64, activation='relu'),
+        Dense(32, activation='relu'),
         Dense(6)  # Predict 6 thresholds
     ])
+    
     model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=4, verbose=0)
+
+    # Use early stopping to prevent overfitting
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+    # Train the model with early stopping
+    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=4, verbose=1, callbacks=[early_stopping])
 
     # Step 8: User Input for Motor Size
     motor_size_input = st.number_input("Enter Motor Output Power (kW)", min_value=0.0, step=1.0)
