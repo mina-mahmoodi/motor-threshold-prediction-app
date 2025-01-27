@@ -5,7 +5,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # Title
 st.title("Motor Threshold Prediction App")
@@ -51,12 +51,16 @@ if uploaded_file is not None:
         "Z Warning Threshold", "Z Error Threshold"
     ]].values
 
-    # Step 5: Normalize Features
+    # Step 5: Normalize Features (Input data)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
+    # Rescale target (y) values to [0, 1] for better performance
+    target_scaler = MinMaxScaler()
+    y_scaled = target_scaler.fit_transform(y)
+
     # Step 6: Train-Test Split
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_scaled, test_size=0.2, random_state=42)
 
     # Step 7: Build and Train Neural Network
     model = Sequential([
@@ -73,7 +77,7 @@ if uploaded_file is not None:
     early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
     # Train the model with early stopping
-    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=4, verbose=1, callbacks=[early_stopping])
+    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=200, batch_size=4, verbose=1, callbacks=[early_stopping])
 
     # Step 8: User Input for Motor Size
     motor_size_input = st.number_input("Enter Motor Output Power (kW)", min_value=0.0, step=1.0)
@@ -90,8 +94,11 @@ if uploaded_file is not None:
         # Predict thresholds for the given motor size
         predicted_thresholds = model.predict(motor_features_scaled)
 
+        # Rescale the predicted values back to the original range
+        predicted_thresholds_rescaled = target_scaler.inverse_transform(predicted_thresholds)
+
         # Display the prediction
         st.write(f"Predicted Thresholds for Motor Size {motor_size_input} kW:")
-        st.write(f"  X Warning: {predicted_thresholds[0][0]:.3f}, X Error: {predicted_thresholds[0][1]:.3f}")
-        st.write(f"  Y Warning: {predicted_thresholds[0][2]:.3f}, Y Error: {predicted_thresholds[0][3]:.3f}")
-        st.write(f"  Z Warning: {predicted_thresholds[0][4]:.3f}, Z Error: {predicted_thresholds[0][5]:.3f}")
+        st.write(f"  X Warning: {predicted_thresholds_rescaled[0][0]:.3f}, X Error: {predicted_thresholds_rescaled[0][1]:.3f}")
+        st.write(f"  Y Warning: {predicted_thresholds_rescaled[0][2]:.3f}, Y Error: {predicted_thresholds_rescaled[0][3]:.3f}")
+        st.write(f"  Z Warning: {predicted_thresholds_rescaled[0][4]:.3f}, Z Error: {predicted_thresholds_rescaled[0][5]:.3f}")
