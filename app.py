@@ -67,7 +67,7 @@ if uploaded_file is not None:
     model.compile(optimizer='adam', loss='mse', metrics=['mae'])
     model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=4, verbose=0)
 
-    # Step 8: User Input for Motor Size
+    # Step 8: Ask for Motor Size
     motor_size_input = st.number_input("Enter Motor Output Power (kW)", min_value=0.0, step=1.0)
 
     if motor_size_input > 0:
@@ -81,7 +81,7 @@ if uploaded_file is not None:
             motor_data = grouped_data[grouped_data["Motor Output Power (kW)"] == motor_size_input]
 
             # Extract the corresponding features for this motor size
-            motor_features = motor_data[[
+            motor_features = motor_data[[ 
                 "Motor Output Power (kW)", "X Mean", "X Std Dev", "X Min", "X Max",
                 "Y Mean", "Y Std Dev", "Y Min", "Y Max",
                 "Z Mean", "Z Std Dev", "Z Min", "Z Max",
